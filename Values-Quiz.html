@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="三观测评">
+<title>🐱 喵喵三观测评</title>
+<style>
+  :root{
+    --bg:#FFF8F0; --card:#FFFDFA; --line:#2B2B2B; --sub:#8A7560;
+    --pink:#FFC2D1; --pink-d:#FF8DA8; --peach:#FFD9B7;
+    --cream:#FFEDC2; --mint:#BEEAD9; --sky:#C5E0F5; --lilac:#E0CCEF;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    min-height:100%;
+    font-family:-apple-system,"PingFang SC","Helvetica Neue","Comic Sans MS",sans-serif;
+    background:var(--bg); color:var(--line);
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;
+    background-image:
+      radial-gradient(circle at 10% 12%,var(--pink) 4px,transparent 5px),
+      radial-gradient(circle at 88% 22%,var(--mint) 4px,transparent 5px),
+      radial-gradient(circle at 18% 78%,var(--cream) 4px,transparent 5px),
+      radial-gradient(circle at 82% 88%,var(--sky) 4px,transparent 5px),
+      radial-gradient(circle at 50% 45%,var(--lilac) 3px,transparent 4px);
+    opacity:.55;pointer-events:none;
+  }
+  .app{
+    max-width:560px;margin:0 auto;padding:24px 18px 40px;
+    position:relative;z-index:1;min-height:100vh;
+  }
+
+  /* ==== 通用按钮 ==== */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border:2.5px solid var(--line);border-radius:999px;
+    padding:13px 28px;font-size:15px;font-weight:800;color:var(--line);
+    cursor:pointer;box-shadow:3px 3px 0 var(--line);
+    background:var(--cream);font-family:inherit;
+    transition:transform .08s,box-shadow .08s;
+  }
+  .btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
+  .btn.pink{background:var(--pink)}
+  .btn.mint{background:var(--mint)}
+  .btn.peach{background:var(--peach)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:3px 3px 0 var(--line)}
+
+  /* ==== 欢迎页 ==== */
+  .welcome{text-align:center;padding:30px 16px}
+  .cat-hero{
+    width:140px;height:140px;margin:0 auto 14px;
+    background:var(--cream);
+    border:3px solid var(--line);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:5px 5px 0 var(--line);
+    font-size:80px;
+  }
+  h1{font-size:26px;margin:10px 0 6px;letter-spacing:1px}
+  .subtitle{color:var(--sub);font-size:14px;font-weight:600;margin-bottom:18px}
+  .info-box{
+    background:var(--card);border:2.5px solid var(--line);border-radius:18px;
+    padding:18px 16px;margin:16px 0 24px;text-align:left;
+    box-shadow:3px 3px 0 var(--line);
+  }
+  .info-box h3{font-size:15px;margin-bottom:10px}
+  .info-box ul{list-style:none;padding:0}
+  .info-box li{
+    padding:6px 0;font-size:13.5px;color:var(--line);font-weight:600;
+    display:flex;align-items:flex-start;gap:8px;
+  }
+  .info-box li::before{content:"🐾";flex-shrink:0}
+
+  /* ==== 进度条 ==== */
+  .progress-wrap{
+    background:var(--card);border:2.5px solid var(--line);border-radius:999px;
+    padding:4px;height:30px;position:relative;margin-bottom:20px;
+    box-shadow:3px 3px 0 var(--line);
+  }
+  .progress-bar{
+    height:100%;background:linear-gradient(90deg,var(--pink),var(--peach),var(--cream));
+    border-radius:999px;transition:width .3s;
+    border:1.5px solid var(--line);
+  }
+  .progress-text{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;color:var(--line);
+  }
+
+  /* ==== 题目卡 ==== */
+  .question-card{
+    background:var(--card);border:2.5px solid var(--line);border-radius:22px;
+    padding:22px 20px;margin-bottom:18px;box-shadow:4px 4px 0 var(--line);
+  }
+  .q-num{
+    display:inline-block;background:var(--pink);
+    border:2px solid var(--line);border-radius:999px;
+    padding:3px 12px;font-size:12px;font-weight:800;margin-bottom:10px;
+  }
+  .q-text{
+    font-size:16px;line-height:1.6;font-weight:700;margin-bottom:18px;
+  }
+  .options{display:flex;flex-direction:column;gap:10px}
+  .option{
+    display:flex;align-items:center;gap:12px;
+    padding:13px 16px;
+    border:2px solid var(--line);border-radius:14px;
+    background:#FAFAF6;cursor:pointer;
+    font-size:14px;font-weight:600;
+    transition:all .15s;
+    box-shadow:2px 2px 0 var(--line);
+  }
+  .option:hover{background:var(--cream)}
+  .option.selected{
+    background:var(--mint);
+    transform:translate(1px,1px);
+    box-shadow:1px 1px 0 var(--line);
+  }
+  .option-letter{
+    flex-shrink:0;width:28px;height:28px;
+    background:var(--card);border:2px solid var(--line);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;
+  }
+  .option.selected .option-letter{background:var(--pink);}
+
+  .nav-bar{display:flex;gap:10px;margin-top:18px}
+  .nav-bar .btn{flex:1;padding:12px}
+
+  /* ==== 结果页 ==== */
+  .result-hero{
+    text-align:center;background:var(--card);
+    border:3px solid var(--line);border-radius:24px;
+    padding:24px 18px;margin-bottom:18px;
+    box-shadow:5px 5px 0 var(--line);position:relative;
+  }
+  .result-emoji{font-size:80px;line-height:1;margin-bottom:8px}
+  .result-code{
+    display:inline-block;background:var(--peach);
+    border:2px solid var(--line);border-radius:999px;
+    padding:4px 14px;font-size:12px;font-weight:800;
+    letter-spacing:2px;margin-bottom:6px;
+  }
+  .result-title{font-size:24px;margin:6px 0;letter-spacing:1px}
+  .result-tagline{color:var(--sub);font-size:13px;font-weight:700;margin-top:4px}
+  .result-section{
+    background:var(--card);border:2.5px solid var(--line);border-radius:18px;
+    padding:18px;margin-bottom:14px;box-shadow:3px 3px 0 var(--line);
+  }
+  .result-section h3{
+    font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px;
+  }
+  .result-section p{font-size:14px;line-height:1.7;color:var(--line);font-weight:500}
+  .traits{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .trait{
+    background:var(--cream);border:2px solid var(--line);border-radius:999px;
+    padding:5px 12px;font-size:12px;font-weight:700;
+  }
+
+  /* 维度条 */
+  .dim-bar{margin:10px 0 14px}
+  .dim-labels{
+    display:flex;justify-content:space-between;font-size:11.5px;
+    font-weight:700;color:var(--sub);margin-bottom:5px;
+  }
+  .dim-labels b{color:var(--line)}
+  .dim-track{
+    height:18px;background:#FAF0E0;
+    border:2px solid var(--line);border-radius:999px;
+    position:relative;overflow:hidden;
+  }
+  .dim-fill{
+    position:absolute;top:0;bottom:0;
+    background:linear-gradient(90deg,var(--pink),var(--peach));
+    border-right:2px solid var(--line);
+  }
+  .dim-marker{
+    position:absolute;top:50%;transform:translate(-50%,-50%);
+    width:18px;height:18px;background:var(--pink-d);
+    border:2px solid var(--line);border-radius:50%;
+  }
+
+  /* ==== Toast ==== */
+  .toast{
+    position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-10px);
+    background:var(--line);color:var(--cream);
+    padding:10px 22px;border-radius:999px;font-size:13px;font-weight:700;
+    border:2.5px solid var(--line);box-shadow:3px 3px 0 var(--pink-d);
+    z-index:300;opacity:0;transition:all .3s;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .footer-tip{
+    text-align:center;color:var(--sub);font-size:12px;
+    margin-top:18px;font-weight:600;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="screen-welcome">
+    <div class="welcome">
+      <div class="cat-hero">🐱</div>
+      <h1>喵喵三观测评</h1>
+      <div class="subtitle">~ 30 道题 · 测出你的世界观 / 人生观 / 价值观 ~</div>
+      <div class="info-box">
+        <h3>🌟 测试说明</h3>
+        <ul>
+          <li>共 <b>30 道题</b>，约 5 分钟完成</li>
+          <li>覆盖 <b>世界观、人生观、价值观</b> 三大维度</li>
+          <li>结果分为 <b>8 种人格类型</b>，找到属于你的那只</li>
+          <li>没有标准答案，凭直觉作答最准 🐾</li>
+        </ul>
+      </div>
+      <button class="btn pink" onclick="startTest()">开始测试 ✨</button>
+    </div>
+  </div>
+
+  <div id="screen-quiz" style="display:none">
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      <div class="progress-text" id="progress-text">第 1 / 30 题</div>
+    </div>
+    <div id="question-area"></div>
+    <div class="nav-bar">
+      <button class="btn" id="btn-prev" onclick="prevQ()">← 上一题</button>
+      <button class="btn mint" id="btn-next" onclick="nextQ()">下一题 →</button>
+    </div>
+    <div class="footer-tip">凭直觉选择，不要纠结哦 🐾</div>
+  </div>
+
+  <div id="screen-result" style="display:none"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==========================================================
+   30 道题数据
+   每题 5 选项，对应 1~5 分
+   dim: 三个轴
+     - "RE": 理性 R(+) ↔ 感性 E(-)   世界观主轴
+     - "PH": 务实 P(+) ↔ 浪漫 H(-)   人生观主轴
+     - "IC": 个人 I(+) ↔ 集体 C(-)   价值观主轴
+   options 顺序：选 0 = 强 R/P/I，选 4 = 强 E/H/C
+========================================================== */
+const QUESTIONS = [
+  // ---------- 世界观（理性 vs 感性） · 10 题 ----------
+  { dim:"RE", q:"看到一部很感人的电影时，你会：",
+    opts:["分析剧情逻辑和拍摄手法","思考它想传达的道理","暂时被情绪带走，但很快走出","跟着哭/笑，融入剧情","泪流满面，久久无法平静"]},
+  { dim:"RE", q:"做重要决定时，你更倾向于：",
+    opts:["列利弊清单计算","查资料、咨询专家","逻辑+直觉一半一半","凭感觉再补充理由","跟着内心走，相信直觉"]},
+  { dim:"RE", q:"对'命运'这件事，你的看法是：",
+    opts:["不存在，全是因果","可以分析但不迷信","部分相信，半信半疑","冥冥之中自有安排","命中注定，缘分天定"]},
+  { dim:"RE", q:"朋友失恋找你倾诉，你会：",
+    opts:["分析对方哪里有问题，给建议","理性分析关系问题","先安慰再分析","陪着哭一会儿","紧紧抱住，什么都不说"]},
+  { dim:"RE", q:"看到一朵很美的花，你的第一反应是：",
+    opts:["这是什么品种的","想知道它怎么长成这样","拍张照存着","好美啊，心情变好了","被美哭，感觉与之共鸣"]},
+  { dim:"PH", q:"对未来五年的规划：",
+    opts:["有详细到每年的目标","有大致方向和阶段","知道大致想要什么","有梦想但没具体计划","顺其自然，未来再说"]},
+  { dim:"PH", q:"听到'梦想'这个词，你想到的是：",
+    opts:["不切实际的空想","有方向才能实现的目标","可以追求的人生光","支撑活下去的火","生命的全部意义"]},
+  { dim:"RE", q:"科学和艺术，你更喜欢：",
+    opts:["科学，逻辑清晰","偏科学一点","都喜欢，看心情","偏艺术一点","艺术，有灵魂"]},
+  { dim:"PH", q:"对'仪式感'的态度：",
+    opts:["浪费时间和钱","可有可无","偶尔来一下挺好","很重要，让生活有滋味","必不可少，是生活的灵魂"]},
+  { dim:"RE", q:"宇宙的意义：",
+    opts:["物理规律的产物，没意义","由我们自己赋予","存在即意义","是个美丽的奇迹","充满了爱与连接"]},
+
+  // ---------- 人生观（务实 vs 浪漫） · 10 题 ----------
+  { dim:"PH", q:"理想的生活节奏：",
+    opts:["高强度奋斗，快速成长","稳步推进，按部就班","张弛有度，劳逸结合","慢节奏，享受当下","随心而活，云淡风轻"]},
+  { dim:"IC", q:"工作 vs 家庭/朋友 时间冲突时：",
+    opts:["工作优先，事业重要","大部分时间给工作","看具体情况","偏向家庭朋友","家人朋友永远第一位"]},
+  { dim:"PH", q:"对'安稳'的看法：",
+    opts:["安稳=温水煮青蛙","稳定中要有进取","平衡安稳和挑战","安稳让人安心","安稳是最大的幸福"]},
+  { dim:"IC", q:"做重大人生决定时，你最看重：",
+    opts:["完全自己做主","主要自己定，参考少量意见","自己和家人一起商量","家人意见占大头","跟着家人/集体的安排"]},
+  { dim:"PH", q:"对'诗和远方'：",
+    opts:["现实点吧，先赚钱","偶尔做做梦无妨","工作之余追求一下","生命中很重要","为之而活也值得"]},
+  { dim:"IC", q:"在群体中，你通常是：",
+    opts:["独行侠，自己玩自己的","保持距离，不太合群","看情况融入或独处","喜欢热闹，常参与","集体活动我必到"]},
+  { dim:"PH", q:"看到流浪小动物，你会：",
+    opts:["可怜，但与我无关","捐点钱给救助站","有空时帮一下","会想办法照顾它","可能直接带回家"]},
+  { dim:"IC", q:"对传统节日的态度：",
+    opts:["可有可无，自己过自己的","偶尔过，不拘形式","按习俗过，不刻意","重视，会精心准备","必须仪式感拉满，全家团聚"]},
+  { dim:"PH", q:"如果有一笔意外之财，你会：",
+    opts:["全部存起来/投资","大部分存，少部分花","存一半花一半","拿出来好好享受一下","买一直想要的浪漫之物"]},
+  { dim:"IC", q:"朋友落难，你愿意付出多少：",
+    opts:["量力而行，不影响自己","在自己能力范围内帮","看交情，关系好就多帮","愿意承担一些代价","哪怕委屈自己也要帮"]},
+
+  // ---------- 价值观（个人 vs 责任） · 10 题 ----------
+  { dim:"IC", q:"成功的定义是：",
+    opts:["实现个人目标","赚到足够多的钱/地位","活成自己想要的样子","让在乎的人为你骄傲","对社会/家庭有所贡献"]},
+  { dim:"PH", q:"金钱在你心中的地位：",
+    opts:["最重要，能解决 90% 问题","非常重要，越多越好","重要，但不是全部","够用就好","钱够花就行，更看重精神"]},
+  { dim:"IC", q:"如果工作和兴趣冲突：",
+    opts:["选工作，兴趣业余搞","工作优先，兴趣兼顾","看哪个回报大","选兴趣，找方法谋生","当然选兴趣，钱不重要"]},
+  { dim:"RE", q:"对'真理'的看法：",
+    opts:["客观存在，可被证实","可以无限接近","因人而异","随心境变化","真理在心中"]},
+  { dim:"IC", q:"个人自由 vs 社会规则：",
+    opts:["规则是约束，自由优先","在不违法范围内自由","平衡两者","遵守规则更重要","集体和谐高于个人"]},
+  { dim:"PH", q:"看待死亡：",
+    opts:["生物现象的终结","活着才重要，少想这些","生命的自然环节","重要的是过程而非长度","是另一段旅程的开始"]},
+  { dim:"IC", q:"做选择时优先级：",
+    opts:["我自己的感受最重要","先考虑自己再兼顾别人","平衡自己和他人","常常优先他人感受","几乎都优先别人/家人"]},
+  { dim:"RE", q:"信仰这件事：",
+    opts:["不需要，相信自己","信科学就够了","保持开放心态","愿意相信美好的力量","有坚定的精神信仰"]},
+  { dim:"PH", q:"如果只剩一年生命，你会：",
+    opts:["把工作/事业收尾好","赚足钱给家人留下","完成一直想做的事","环游世界，谈一场恋爱","和爱的人安静度过每一天"]},
+  { dim:"IC", q:"什么样的活法最有价值：",
+    opts:["活成独一无二的自己","实现自我成长和成就","平衡自我与他人","为爱的人付出","为更大的群体做贡献"]},
+];
+
+/* ==========================================================
+   8 种人格类型（基于三轴二元）
+   R=理性 / E=感性
+   P=务实 / H=浪漫
+   I=个人 / C=集体
+========================================================== */
+const TYPES = {
+  "RPI": {
+    emoji:"🦉",
+    name:"理性思考者",
+    tag:"独立、冷静、清醒",
+    overview:"你是典型的理性派，看世界像看一盘棋——逻辑清晰、目标明确、自我驱动。你不容易被情绪左右，做决策果断高效。在群体中常是被依赖的"清醒者"，但要小心别让理性挡住了温度。",
+    traits:["逻辑控","独立自主","目标导向","冷静高效","判断力强"],
+    advice:"适当让感性进来透透气，世界会变得更立体。"
+  },
+  "RPC": {
+    emoji:"🛡️",
+    name:"务实守护者",
+    tag:"可靠、稳重、有担当",
+    overview:"你是大家的"定海神针"——理性务实，重视家庭和集体，承担责任不带情绪化。你做事稳，做人靠谱，是能让别人安心睡觉的那种人。但有时候过于压抑自己，记得也要照顾自己的需要。",
+    traits:["责任心强","稳健可靠","顾全大局","脚踏实地","值得信赖"],
+    advice:"你不是只为别人活的，请也给自己一点偏爱。"
+  },
+  "RHI": {
+    emoji:"🚀",
+    name:"自由开拓者",
+    tag:"独立、远见、不羁",
+    overview:"理性的脑子配上浪漫的心，再加一个不愿被束缚的灵魂——你是天生的开拓者。你有清晰的思考力，又敢做别人不敢做的事，把"梦想"当成"待办事项"。世界因为你这样的人而前进。",
+    traits:["远见者","创造力","独立思考","行动派","不畏改变"],
+    advice:"路上记得回头看看支持你的人。"
+  },
+  "RHC": {
+    emoji:"🏛️",
+    name:"理想建造者",
+    tag:"使命感、深思、温柔有力",
+    overview:"你脑子里有蓝图，心里有人间。你用理性规划路径，用理想照亮方向，又始终把"我们"放在"我"的前面。你是会真正改变小世界的那种人——可能是一个团队、一个社区、或一个家庭。",
+    traits:["有使命感","深度思考","温柔坚定","凝聚他人","长期主义"],
+    advice:"承担多了别忘了喘气，伟大也需要休息。"
+  },
+  "EPI": {
+    emoji:"🌸",
+    name:"感性自由派",
+    tag:"敏感、独立、真实",
+    overview:"你活得真实，活得自我。能感受到别人感受不到的细腻情绪，又坚持不被任何人"应该"绑架。表面随性，内核坚硬。你的人生关键词是"忠于自己的感受"。",
+    traits:["敏锐感受","真我至上","直觉强","独立思考","拒绝伪装"],
+    advice:"别忘了世界很大，偶尔也让别人的故事进来。"
+  },
+  "EPC": {
+    emoji:"🌿",
+    name:"温暖照顾者",
+    tag:"善良、共情、踏实",
+    overview:"你是世界上最容易让人放下防备的那种人。共情力满分，又务实可靠，常常是朋友圈的"妈妈"或"姐姐"角色。你为别人付出从不计较，但请记得：你自己的快乐也很重要。",
+    traits:["共情力强","温柔可靠","懂得倾听","愿意付出","治愈系"],
+    advice:"先把自己照顾好，才能持续地温暖别人。"
+  },
+  "EHI": {
+    emoji:"🎨",
+    name:"浪漫艺术家",
+    tag:"自由、灵感、燃烧",
+    overview:"你是天生的艺术灵魂——感性饱满、浪漫到底、又不愿被任何规则定义。你看到的世界比别人多一层颜色，听到的比别人多一段旋律。你为美而活，为爱而燃。",
+    traits:["感受丰沛","创造力","浪漫主义","追求自由","灵感型"],
+    advice:"现实是地基，记得偶尔下来踩一踩土。"
+  },
+  "EHC": {
+    emoji:"💝",
+    name:"治愈共情者",
+    tag:"柔软、深情、奉献",
+    overview:"你是真正用爱在生活的人。能感受别人的痛和喜，又愿意为爱付出一切。你相信温柔比锋利更有力量，相信团圆比自由更值得守护。你是这个世界的软肋，也是它的解药。",
+    traits:["深度共情","柔软善良","奉献精神","重情重义","守护他人"],
+    advice:"爱自己 > 爱别人。请把自己也放进你照顾的名单里。"
+  },
+};
+
+/* ========================================================== */
+let answers = new Array(QUESTIONS.length).fill(null);
+let cur = 0;
+
+function $(id){return document.getElementById(id)}
+function show(id){
+  ["screen-welcome","screen-quiz","screen-result"].forEach(s=>{
+    $(s).style.display = (s===id?"block":"none");
+  });
+  window.scrollTo(0,0);
+}
+function toast(msg){
+  const el=$("toast"); el.textContent="🐾 "+msg;
+  el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"),1500);
+}
+
+function startTest(){
+  answers = new Array(QUESTIONS.length).fill(null);
+  cur = 0;
+  show("screen-quiz");
+  renderQ();
+}
+
+function renderQ(){
+  const q = QUESTIONS[cur];
+  $("progress-bar").style.width = ((cur+1)/QUESTIONS.length*100)+"%";
+  $("progress-text").textContent = `第 ${cur+1} / ${QUESTIONS.length} 题`;
+
+  const html = `
+    <div class="question-card">
+      <span class="q-num">第 ${cur+1} 题</span>
+      <div class="q-text">${q.q}</div>
+      <div class="options">
+        ${q.opts.map((opt,i)=>`
+          <div class="option ${answers[cur]===i?'selected':''}" onclick="selectOpt(${i})">
+            <div class="option-letter">${String.fromCharCode(65+i)}</div>
+            <div>${opt}</div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+  $("question-area").innerHTML = html;
+
+  $("btn-prev").disabled = cur===0;
+  $("btn-next").textContent = cur===QUESTIONS.length-1 ? "查看结果 ✨" : "下一题 →";
+}
+
+function selectOpt(i){
+  answers[cur] = i;
+  renderQ();
+  // 自动跳下一题（最后一题不自动跳）
+  if (cur < QUESTIONS.length-1){
+    setTimeout(()=>{ if(answers[cur]!==null){ cur++; renderQ(); } }, 280);
+  }
+}
+
+function prevQ(){
+  if (cur>0){ cur--; renderQ(); }
+}
+function nextQ(){
+  if (answers[cur]===null){ toast("先选一个再继续~"); return; }
+  if (cur < QUESTIONS.length-1){ cur++; renderQ(); }
+  else { computeResult(); }
+}
+
+function computeResult(){
+  // 三轴累计：选项 0~4 → 分值 +2,+1,0,-1,-2
+  // 正分偏 R/P/I，负分偏 E/H/C
+  let scores = {RE:0, PH:0, IC:0};
+  let counts = {RE:0, PH:0, IC:0};
+  QUESTIONS.forEach((q,i)=>{
+    const v = answers[i];
+    if (v===null) return;
+    const s = 2 - v;  // 0->+2, 1->+1, 2->0, 3->-1, 4->-2
+    scores[q.dim] += s;
+    counts[q.dim] += 1;
+  });
+
+  // 归一化到 -100 ~ +100
+  const norm = (k)=> counts[k]? Math.round(scores[k]/(counts[k]*2)*100):0;
+  const reN = norm("RE"), phN = norm("PH"), icN = norm("IC");
+
+  const code = (reN>=0?"R":"E") + (phN>=0?"P":"H") + (icN>=0?"I":"C");
+  const t = TYPES[code];
+
+  renderResult(t, code, {RE:reN, PH:phN, IC:icN});
+  show("screen-result");
+}
+
+function renderResult(t, code, dims){
+  const dimBar = (label, leftLabel, rightLabel, val) => {
+    // val: -100 ~ +100
+    // 显示位置：50% + val/2 %
+    const pos = 50 + val/2;
+    const leftBold  = val>=0 ? `<b>${leftLabel}</b>` : leftLabel;
+    const rightBold = val<0  ? `<b>${rightLabel}</b>` : rightLabel;
+    return `
+      <div class="dim-bar">
+        <div class="dim-labels"><span>${leftBold}</span><span>${rightBold}</span></div>
+        <div class="dim-track">
+          <div class="dim-marker" style="left:${pos}%"></div>
+        </div>
+      </div>`;
+  };
+
+  $("screen-result").innerHTML = `
+    <div class="result-hero">
+      <div class="result-emoji">${t.emoji}</div>
+      <div class="result-code">类型 · ${code}</div>
+      <div class="result-title">${t.name}</div>
+      <div class="result-tagline">${t.tag}</div>
+    </div>
+
+    <div class="result-section">
+      <h3>🌟 你是这样的</h3>
+      <p>${t.overview}</p>
+    </div>
+
+    <div class="result-section">
+      <h3>🐾 关键词</h3>
+      <div class="traits">
+        ${t.traits.map(x=>`<span class="trait">${x}</span>`).join("")}
+      </div>
+    </div>
+
+    <div class="result-section">
+      <h3>📊 三观维度</h3>
+      ${dimBar("世界观","🧠 理性","💖 感性",dims.RE)}
+      ${dimBar("人生观","⚡ 务实","🌙 浪漫",dims.PH)}
+      ${dimBar("价值观","🚪 个人","🤝 集体",dims.IC)}
+    </div>
+
+    <div class="result-section" style="background:var(--cream)">
+      <h3>💡 一句话建议</h3>
+      <p>${t.advice}</p>
+    </div>
+
+    <div class="nav-bar">
+      <button class="btn" onclick="show('screen-welcome')">🏠 回到首页</button>
+      <button class="btn pink" onclick="startTest()">🔄 重新测试</button>
+    </div>
+    <div class="footer-tip">分享给朋友看看 ta 是哪种猫吧 🐱</div>
+  `;
+}
+
+show("screen-welcome");
+</script>
+</body>
+</html>
